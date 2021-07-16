@@ -29,6 +29,8 @@ public class Power.MainView : Gtk.Grid {
     private PowerSettings screen;
     private PowerSupply power_supply;
 
+    private GLib.Settings power_manager_settings;
+
     private enum PowerActionType {
         BLANK,
         SUSPEND,
@@ -221,8 +223,26 @@ public class Power.MainView : Gtk.Grid {
 
             main_grid.attach (switcher_grid, 0, 7, 2, 1);
         }
-
         main_grid.attach (stack, 0, 8, 2, 1);
+
+        power_manager_settings = new GLib.Settings ("io.elementary.power-manager-daemon.powermode");
+        var power_mode_label = new Gtk.Label ("Power Mode:");
+        power_mode_label.xalign = 1;
+
+        var power_mode_button = new Granite.Widgets.ModeButton ();
+        power_mode_button.append_icon ("battery", Gtk.IconSize.DND);
+        power_mode_button.append_icon ("sync-synchronizing", Gtk.IconSize.DND);
+        power_mode_button.append_icon ("media-record", Gtk.IconSize.DND);
+        power_mode_button.halign = Gtk.Align.START;
+
+        power_mode_button.mode_changed.connect (() => {
+            power_manager_settings.set_int ("power-mode", power_mode_button.selected);
+        });
+
+        power_mode_button.selected = power_manager_settings.get_int ("power-mode");
+
+        main_grid.attach (power_mode_label, 0, 9, 1, 1);
+        main_grid.attach (power_mode_button, 1, 9, 1, 1);
 
         add (main_grid);
         show_all ();
